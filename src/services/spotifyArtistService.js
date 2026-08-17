@@ -1,15 +1,7 @@
 import { getArtistAlbums } from '@/services/spotifyApi.js';
 
 
-export async function getAllArtistAlbums(artist, forceRefresh = false) { // TODO: refactor, don't like this
-    const followedArtists = JSON.parse(localStorage.getItem('followedArtists'));
-
-    const cachedAlbums = artist.albums || [];
-
-    if (cachedAlbums.length > 0 && !forceRefresh) {
-        return cachedAlbums;
-    }
-
+export async function getAllArtistAlbums(artist) {
     const albums = [];
     let nextUrl;
 
@@ -19,9 +11,6 @@ export async function getAllArtistAlbums(artist, forceRefresh = false) { // TODO
         albums.push(...response.items);
         nextUrl = response.next;
     } while (nextUrl);
-
-    artist.albums = albums;
-    localStorage.setItem('followedArtists', JSON.stringify(followedArtists));
 
     return albums;
 }

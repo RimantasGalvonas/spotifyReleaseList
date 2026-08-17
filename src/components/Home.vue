@@ -10,13 +10,13 @@ const isLoading = ref(true);
 const message = ref();
 const albums = ref([]);
 
-async function load(refresh = false) {
+async function load() {
     isLoading.value = true;
     albums.value = [];
 
     try {
         message.value = 'Loading followed artists...';
-        followedArtists.value = await getAllFollowedArtists(refresh);
+        followedArtists.value = await getAllFollowedArtists();
     } catch (error) {
         message.value = 'Error loading followed artists: ' + error;
 
@@ -28,7 +28,7 @@ async function load(refresh = false) {
         message.value = `Loading albums for ${artist.name} (${index + 1}/${followedArtists.value.length})...`;
 
         try {
-            let artistAlbums = await getAllArtistAlbums(artist, refresh);
+            let artistAlbums = await getAllArtistAlbums(artist);
             for (const album of artistAlbums) {
                 album.artist = artist;
             }
@@ -46,6 +46,8 @@ async function load(refresh = false) {
         return dateB - dateA;
     });
 
+    localStorage.setItem('cachedList', JSON.stringify(albums.value));
+
     isLoading.value = false;
 }
 
@@ -56,9 +58,15 @@ onMounted(async () => {
         return;
     }
 
-    await load();
+    let cachedAlbums = JSON.parse(localStorage.getItem('cachedList'));
 
-    // TODO: throw out all that artist caching logic. Just cache this list.
+    if (cachedAlbums.length > 0) {
+        albums.value = cachedAlbums;
+    } else {
+        await load();
+    }
+
+    isLoading.value = false;
 });
 </script>
 
