@@ -1,4 +1,4 @@
-import { getArtistAlbums, getFollowedArtists } from '@/services/spotifyApi.js';
+import * as SpotifyApi from '@/services/spotifyApi.js';
 
 export async function getAllFollowedArtists() {
     const artists = [];
@@ -6,7 +6,7 @@ export async function getAllFollowedArtists() {
     let nextUrl;
 
     do {
-        const response = await getFollowedArtists(nextUrl);
+        const response = await SpotifyApi.getFollowedArtists(nextUrl);
 
         artists.push(...response.artists.items);
         nextUrl = response.artists.next;
@@ -20,11 +20,15 @@ export async function getAllArtistAlbums(artist) {
     let nextUrl;
 
     do {
-        const response = await getArtistAlbums(artist.id, nextUrl);
+        const response = await SpotifyApi.getArtistAlbums(artist.id, nextUrl);
 
         albums.push(...response.items);
         nextUrl = response.next;
     } while (nextUrl);
 
     return albums;
+}
+
+export async function getCurrentUser() {
+    return await SpotifyApi.getCurrentUser();
 }

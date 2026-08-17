@@ -1,5 +1,6 @@
 import { clientId, redirectUri } from '@/config/spotify';
 import router from '@/router';
+import { useAuthStore } from '@/stores/authStore.js';
 
 export async function getFollowedArtists(nextUrl) {
     let url = 'https://api.spotify.com/v1/me/following?type=artist&limit=50';
@@ -17,6 +18,12 @@ export async function getArtistAlbums(artistId, nextUrl) {
     if (nextUrl) {
         url = nextUrl;
     }
+
+    return await makeAuthenticatedCall(url);
+}
+
+export async function getCurrentUser() {
+    let url = 'https://api.spotify.com/v1/me';
 
     return await makeAuthenticatedCall(url);
 }
@@ -71,14 +78,17 @@ async function makeAuthenticatedCall(url, payload = {}, canRetry = true) {
 }
 
 function addAuthorizationHeaderToPayload(payload = {}) {
+    const authStore = useAuthStore();
+
     payload.headers = payload.headers || {};
-    payload.headers.Authorization = 'Bearer ' + localStorage.getItem('access_token');
+    payload.headers.Authorization = `Bearer ${authStore.accessToken}`;
 
     return payload;
 }
 
 async function refreshAccessToken() {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const authStore = useAuthStore();
+
     const url = "https://accounts.spotify.com/api/token";
 
     const payload = {
@@ -88,7 +98,7 @@ async function refreshAccessToken() {
         },
         body: new URLSearchParams({
             grant_type: 'refresh_token',
-            refresh_token: refreshToken,
+            refresh_token: authStore.refreshToken,
             client_id: clientId,
         }),
     };
@@ -106,8 +116,5 @@ async function refreshAccessToken() {
         throw new Error(`Token refresh failed: ${response.error}`);
     }
 
-    localStorage.setItem('access_token', response.access_token);
-    if (response.refresh_token) {
-        localStorage.setItem('refresh_token', response.refresh_token);
-    }
+    authStore.setTokens(response);
 }

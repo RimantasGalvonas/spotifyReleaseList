@@ -2,8 +2,11 @@
     import { onMounted, ref } from 'vue';
     import { useRouter } from 'vue-router';
     import { exchangeCodeForToken } from '@/services/spotifyApi.js';
+    import { getCurrentUser } from '@/services/spotifyService.js';
+    import { useAuthStore } from '@/stores/authStore.js';
 
     const router = useRouter();
+    const authStore = useAuthStore();
 
     const message = ref('Finishing Spotify authorization...');
 
@@ -40,10 +43,13 @@
 
             const response = await exchangeCodeForToken(code, codeVerifier);
 
-            localStorage.setItem('access_token', response.access_token);
-            localStorage.setItem('refresh_token', response.refresh_token);
+            authStore.setTokens(response);
 
             message.value = 'Authorization successful!';
+
+            const user = await getCurrentUser();
+
+            authStore.setUser(user);
 
             await router.replace('/');
         } catch (error) {
