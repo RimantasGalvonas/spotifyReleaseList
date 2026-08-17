@@ -44,6 +44,10 @@ export async function getFollowedArtists(nextUrl) { // TODO: a lot of duplicate 
 
     const result = await response.json();
 
+    if (!response.ok) {
+        throw new Error(result.error.message);
+    }
+
     return result;
 }
 
@@ -61,6 +65,10 @@ export async function getArtistAlbums(artistId, nextUrl) { // TODO: a lot of dup
     });
 
     const result = await response.json();
+
+    if (!response.ok) {
+        throw new Error(result.error.message);
+    }
 
     return result;
 }
