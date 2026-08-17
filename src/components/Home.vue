@@ -53,7 +53,7 @@
 
     onMounted(async () => {
         if (!localStorage.getItem('access_token')) {
-            await router.push('/auth');
+            await router.push('/login');
 
             return;
         }
@@ -71,7 +71,6 @@
 </script>
 
 <template>
-    <div>Hello</div>
     <p>
         <button :disabled="isLoading" @click="load(true)">
             {{ isLoading ? 'Loading...' : 'Refresh' }}

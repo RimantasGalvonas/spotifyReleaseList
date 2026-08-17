@@ -1,7 +1,12 @@
-<script setup></script>
+<script setup>
+import Header from '@/components/Header.vue';
+</script>
 
 <template>
-    <RouterView />
+    <Header></Header>
+    <div id="main">
+        <RouterView />
+    </div>
 </template>
 
 <style scoped></style>

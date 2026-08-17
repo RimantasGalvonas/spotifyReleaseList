@@ -38,9 +38,10 @@
                 throw new Error('Code verifier is missing. Please start again.');
             }
 
-            const accessToken = await exchangeCodeForToken(code, codeVerifier);
+            const response = await exchangeCodeForToken(code, codeVerifier);
 
-            localStorage.setItem('access_token', accessToken);
+            localStorage.setItem('access_token', response.access_token);
+            localStorage.setItem('refresh_token', response.refresh_token);
 
             message.value = 'Authorization successful!';
 

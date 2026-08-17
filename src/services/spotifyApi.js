@@ -1,4 +1,25 @@
 import { clientId, redirectUri } from '@/config/spotify';
+import router from '@/router';
+
+export async function getFollowedArtists(nextUrl) {
+    let url = 'https://api.spotify.com/v1/me/following?type=artist&limit=50';
+
+    if (nextUrl) {
+        url = nextUrl;
+    }
+
+    return await makeAuthenticatedCall(url);
+}
+
+export async function getArtistAlbums(artistId, nextUrl) {
+    let url = `https://api.spotify.com/v1/artists/${artistId}/albums?limit=10`;
+
+    if (nextUrl) {
+        url = nextUrl;
+    }
+
+    return await makeAuthenticatedCall(url);
+}
 
 export async function exchangeCodeForToken(code, codeVerifier) {
     const url = 'https://accounts.spotify.com/api/token';
@@ -26,23 +47,21 @@ export async function exchangeCodeForToken(code, codeVerifier) {
         );
     }
 
-    return response.access_token;
+    return response;
 }
 
-export async function getFollowedArtists(nextUrl) { // TODO: a lot of duplicate code. Refactor
-    let url = 'https://api.spotify.com/v1/me/following?type=artist&limit=50';
+async function makeAuthenticatedCall(url, payload = {}, canRetry = true) {
+    payload = addAuthorizationHeaderToPayload(payload);
 
-    if (nextUrl) {
-        url = nextUrl;
-    }
-
-    const response = await fetch(url, {
-        headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('access_token'),
-        },
-    });
+    const response = await fetch(url, payload);
 
     const result = await response.json();
+
+    if (response.status === 401 && canRetry) {
+        await refreshAccessToken(url, payload);
+
+        return await makeAuthenticatedCall(url, payload, false);
+    }
 
     if (!response.ok) {
         throw new Error(result.error.message);
@@ -51,24 +70,44 @@ export async function getFollowedArtists(nextUrl) { // TODO: a lot of duplicate 
     return result;
 }
 
-export async function getArtistAlbums(artistId, nextUrl) { // TODO: a lot of duplicate code. Refactor
-    let url = `https://api.spotify.com/v1/artists/${artistId}/albums?limit=10`;
+function addAuthorizationHeaderToPayload(payload = {}) {
+    payload.headers = payload.headers || {};
+    payload.headers.Authorization = 'Bearer ' + localStorage.getItem('access_token');
 
-    if (nextUrl) {
-        url = nextUrl;
-    }
+    return payload;
+}
 
-    const response = await fetch(url, {
+async function refreshAccessToken() {
+    const refreshToken = localStorage.getItem('refresh_token');
+    const url = "https://accounts.spotify.com/api/token";
+
+    const payload = {
+        method: 'POST',
         headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('access_token'),
+            'Content-Type': 'application/x-www-form-urlencoded',
         },
-    });
+        body: new URLSearchParams({
+            grant_type: 'refresh_token',
+            refresh_token: refreshToken,
+            client_id: clientId,
+        }),
+    };
 
-    const result = await response.json();
+    const result = await fetch(url, payload);
+    const response = await result.json();
 
-    if (!response.ok) {
-        throw new Error(result.error.message);
+    if (!result.ok) {
+        if (response.error === 'invalid_grant') {
+            await router.replace('/logout');
+
+            throw new Error('Spotify authorization has expired.');
+        }
+
+        throw new Error(`Token refresh failed: ${response.error}`);
     }
 
-    return result;
+    localStorage.setItem('access_token', response.access_token);
+    if (response.refresh_token) {
+        localStorage.setItem('refresh_token', response.refresh_token);
+    }
 }

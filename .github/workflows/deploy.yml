@@ -39,7 +39,7 @@ jobs:
         run: npm run build
         env:
           VITE_SPOTIFY_CLIENT_ID: ${{ vars.VITE_SPOTIFY_CLIENT_ID }}
-          VITE_SPOTIFY_REDIRECT_URI: https://rimantasgalvonas.github.io/spotifyReleaseList/auth/callback
+          VITE_SPOTIFY_REDIRECT_URI: https://rimantasgalvonas.github.io/spotifyReleaseList/authCallback
 
       - name: Add SPA fallback
         run: cp dist/index.html dist/404.html
