@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { clientId, redirectUri } from '@/config/spotify';
+import { exchangeCodeForToken } from '@/services/spotifyApi.js';
 
 const router = useRouter();
 
@@ -10,35 +10,6 @@ const message = ref('Finishing Spotify authorization...');
 function clearLoginData() {
     sessionStorage.removeItem('code_verifier');
     sessionStorage.removeItem('authentication_state');
-}
-
-async function exchangeCodeForToken(code, codeVerifier) {
-    const url = 'https://accounts.spotify.com/api/token';
-
-    const payload = {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        body: new URLSearchParams({
-            client_id: clientId,
-            grant_type: 'authorization_code',
-            code,
-            redirect_uri: redirectUri,
-            code_verifier: codeVerifier,
-        }),
-    };
-
-    const body = await fetch(url, payload);
-    const response = await body.json();
-
-    if (!body.ok) {
-        throw new Error(
-            response.error_description || 'Spotify authorization failed.',
-        );
-    }
-
-    return response.access_token;
 }
 
 onMounted(async () => {
@@ -75,7 +46,7 @@ onMounted(async () => {
 
         await router.replace('/');
     } catch (error) {
-        message.value = error.message || 'Something went wrong.';
+        message.value = 'Something went wrong: ' + error.message;
     } finally {
         clearLoginData();
     }
@@ -84,4 +55,5 @@ onMounted(async () => {
 
 <template>
     <p>{{ message }}</p>
+    <p><RouterLink to="/">Go to Home</RouterLink></p>
 </template>
