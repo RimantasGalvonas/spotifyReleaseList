@@ -29,13 +29,35 @@ export async function exchangeCodeForToken(code, codeVerifier) {
     return response.access_token;
 }
 
-export async function getFollowedArtists(url = 'https://api.spotify.com/v1/me/following?type=artist&limit=50') {
-    let accessToken = localStorage.getItem('access_token');
+export async function getFollowedArtists(nextUrl) { // TODO: a lot of duplicate code. Refactor
+    let url = 'https://api.spotify.com/v1/me/following?type=artist&limit=50';
+
+    if (nextUrl) {
+        url = nextUrl;
+    }
 
     const response = await fetch(url, {
         headers: {
-            Authorization: 'Bearer ' + accessToken
-        }
+            Authorization: 'Bearer ' + localStorage.getItem('access_token'),
+        },
+    });
+
+    const result = await response.json();
+
+    return result;
+}
+
+export async function getArtistAlbums(artistId, nextUrl) { // TODO: a lot of duplicate code. Refactor
+    let url = `https://api.spotify.com/v1/artists/${artistId}/albums?limit=10`;
+
+    if (nextUrl) {
+        url = nextUrl;
+    }
+
+    const response = await fetch(url, {
+        headers: {
+            Authorization: 'Bearer ' + localStorage.getItem('access_token'),
+        },
     });
 
     const result = await response.json();
