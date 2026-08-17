@@ -17,11 +17,6 @@ export const useAuthStore = defineStore('authStore', {
             }
         },
 
-        setUser(user) {
-            this.user = user;
-            this.loggedIn = true;
-        },
-
         logout() {
             this.user = null;
             this.accessToken = null;

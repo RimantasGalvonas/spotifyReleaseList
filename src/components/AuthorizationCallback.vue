@@ -49,7 +49,8 @@
 
             const user = await getCurrentUser();
 
-            authStore.setUser(user);
+            authStore.user = user;
+            authStore.loggedIn = true;
 
             await router.replace('/');
         } catch (error) {
