@@ -1,8 +1,7 @@
 <script setup>
 import { onMounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
-import { getAllFollowedArtists } from '@/services/spotifyUserService.js';
-import { getAllArtistAlbums } from '@/services/spotifyArtistService.js';
+import { getAllFollowedArtists, getAllArtistAlbums } from '@/services/spotifyService.js';
 
 const router = useRouter();
 const followedArtists = ref([]);
