@@ -1,16 +1,12 @@
 <script setup>
     import { onMounted, ref } from 'vue';
-    import { useRouter } from 'vue-router';
-    import { useAuthStore } from '@/stores/authStore.js';
     import { getAllFollowedArtists, getAllArtistAlbums } from '@/services/spotifyService.js';
     import StatusMessages from '@/components/StatusMessages.vue';
 
-    const router = useRouter();
     const followedArtists = ref([]);
     const isLoading = ref(true);
     const messages = ref([]);
     const albums = ref([]);
-    const authStore = useAuthStore();
 
     async function load() {
         isLoading.value = true;
@@ -54,12 +50,6 @@
     }
 
     onMounted(async () => {
-        if (!authStore.loggedIn) {
-            await router.push('/login');
-
-            return;
-        }
-
         let cachedAlbums = JSON.parse(localStorage.getItem('cachedList'));
 
         if (cachedAlbums?.length > 0) {
