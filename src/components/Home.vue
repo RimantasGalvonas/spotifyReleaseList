@@ -74,10 +74,8 @@
     <table>
         <tr v-for="album in albums" :key="album.id">
             <td><img :src="album.images[2].url"/></td>
-            <td>{{ album.artist.name }}</td>
-            <td>{{ album.name }}</td>
+            <td><b>{{ album.artist.name }}</b><br/>{{ album.name }}<br/>({{ album.album_type }})</td>
             <td>{{ album.release_date }}</td>
-            <td>{{ album.album_type }}</td>
         </tr>
     </table>
 </template>
